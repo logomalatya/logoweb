@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Logo44 - MalatyaLogo</title>
-  <link rel="icon" type="image/png" href="https://i.ibb.co/rRZSYbjW/Screenshot-2025-07-02-00-34-47-219-com-google-android-googlequicksearchbox-edit.jpg" />
+  <!-- Favicon olarak güncel logo -->
+  <link rel="icon" type="image/png" href="https://i.ibb.co/8nZct90r/IMG-20250702-005142.png" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
@@ -27,6 +28,12 @@
     header {
       text-align: center;
       padding: 40px 20px 10px;
+    }
+
+    header img {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
     }
 
     h1 {
@@ -161,12 +168,13 @@
       background: rgba(255,255,255,0.3);
       font-weight: bold;
     }
-
   </style>
 </head>
 <body oncontextmenu="return false">
 
   <header>
+    <!-- Güncel logo burada -->
+    <img src="https://i.ibb.co/8nZct90r/IMG-20250702-005142.png" alt="Logo44" />
     <h1>Hoşgeldiniz</h1>
     <h2>MalatyaLogo paylaşımlarını inceleyebilirsiniz</h2>
   </header>
@@ -178,7 +186,6 @@
   </div>
 
   <div id="logoGrid"></div>
-
   <div id="pagination"></div>
 
   <div class="admin-controls">
@@ -205,122 +212,77 @@
 
   <script>
     const password = "Malatya44malatya";
-
     let logos = [
-      {
-        name: "HilalYıldız",
-        url: "https://i.ibb.co/Hf7X1R61/1751380579777.png"
-      },
-      {
-        name: "RuinedLogo",
-        url: "https://i.ibb.co/xVbvxWw/copilot-image-1751031679489.png"
-      }
+      { name: "HilalYıldız", url: "https://i.ibb.co/Hf7X1R61/1751380579777.png" },
+      { name: "RuinedLogo", url: "https://i.ibb.co/xVbvxWw/copilot-image-1751031679489.png" }
     ];
-
-    let currentPage = 1;
-    const perPage = 6;
+    let currentPage = 1, perPage = 6;
 
     function renderLogos() {
       const grid = document.getElementById("logoGrid");
       grid.innerHTML = "";
-
       const searchVal = document.getElementById("searchInput").value.toLowerCase();
       const filtered = logos.filter(l => l.name.toLowerCase().includes(searchVal));
-
       const maxPage = Math.max(1, Math.ceil(filtered.length / perPage));
       if (currentPage > maxPage) currentPage = maxPage;
-
-      const start = (currentPage - 1) * perPage;
-      const currentLogos = filtered.slice(start, start + perPage);
-
-      currentLogos.forEach(logo => {
-        const div = document.createElement("div");
-        div.className = "logoItem";
-        div.innerHTML = `<img src="${logo.url}" alt="${logo.name}" onclick="openModal('${logo.url}')"><p>${logo.name}</p>`;
-        grid.appendChild(div);
-      });
-
+      filtered.slice((currentPage-1)*perPage, (currentPage-1)*perPage+perPage)
+        .forEach(logo => {
+          const div = document.createElement("div");
+          div.className = "logoItem";
+          div.innerHTML = `<img src="${logo.url}" alt="${logo.name}" onclick="openModal('${logo.url}')"><p>${logo.name}</p>`;
+          grid.appendChild(div);
+        });
       renderPagination(maxPage);
     }
 
     function renderPagination(maxPage) {
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
-
-      for(let i=1; i<=maxPage; i++) {
+      const pg = document.getElementById("pagination");
+      pg.innerHTML = "";
+      for (let i=1; i<=maxPage; i++) {
         const span = document.createElement("span");
         span.textContent = i;
-        if(i === currentPage) span.classList.add("active");
-        span.onclick = () => {
-          currentPage = i;
-          renderLogos();
-          window.scrollTo({top:0, behavior:'smooth'});
-        };
-        pagination.appendChild(span);
+        if (i===currentPage) span.classList.add("active");
+        span.onclick = () => { currentPage=i; renderLogos(); window.scrollTo({top:0, behavior:'smooth'}); };
+        pg.appendChild(span);
       }
     }
 
     function goToPage() {
       const val = parseInt(document.getElementById("pageNumber").value);
-      if (isNaN(val) || val < 1) return;
-      const searchVal = document.getElementById("searchInput").value.toLowerCase();
-      const filtered = logos.filter(l => l.name.toLowerCase().includes(searchVal));
-      const maxPage = Math.ceil(filtered.length / perPage);
-      if (val <= maxPage) {
-        currentPage = val;
-        renderLogos();
-        window.scrollTo({top:0, behavior:'smooth'});
+      if (!isNaN(val) && val>=1) {
+        const max = Math.ceil(logos.length/perPage);
+        if (val<=max) { currentPage=val; renderLogos(); window.scrollTo({top:0,behavior:'smooth'}); }
       }
     }
 
-    function searchLogo() {
-      currentPage = 1;
+    function searchLogo() { currentPage=1; renderLogos(); }
+    function openModal(url){ document.getElementById("modalImg").src=url; document.getElementById("modal").style.display="flex"; }
+    function closeModal(){ document.getElementById("modal").style.display="none"; }
+
+    function requestPassword(act){
+      const ent = prompt("Yetkili şifresini girin:");
+      if (ent===password) {
+        if (act==="add") addLogo();
+        if (act==="delete") deleteLogo();
+        if (act==="deleteAll") deleteAll();
+      } else alert("Şifre yanlış!");
+    }
+
+    function addLogo(){
+      const url=document.getElementById("newLogoUrl").value.trim();
+      const name=document.getElementById("newLogoName").value.trim();
+      if(url&&name){ logos.push({name,url}); document.getElementById("newLogoUrl").value=""; document.getElementById("newLogoName").value=""; renderLogos(); }
+    }
+
+    function deleteLogo(){
+      const name=document.getElementById("deleteLogoName").value.trim().toLowerCase();
+      logos = logos.filter(l=>l.name.toLowerCase()!==name);
+      document.getElementById("deleteLogoName").value="";
       renderLogos();
     }
 
-    function openModal(url) {
-      document.getElementById("modalImg").src = url;
-      document.getElementById("modal").style.display = "flex";
-    }
-
-    function closeModal() {
-      document.getElementById("modal").style.display = "none";
-    }
-
-    function requestPassword(action) {
-      const entered = prompt("Yetkili şifresini girin:");
-      if (entered === password) {
-        if (action === "add") addLogo();
-        else if (action === "delete") deleteLogo();
-        else if (action === "deleteAll") deleteAll();
-      } else {
-        alert("Şifre yanlış!");
-      }
-    }
-
-    function addLogo() {
-      const url = document.getElementById("newLogoUrl").value.trim();
-      const name = document.getElementById("newLogoName").value.trim();
-      if (url && name) {
-        logos.push({ name, url });
-        document.getElementById("newLogoUrl").value = "";
-        document.getElementById("newLogoName").value = "";
-        renderLogos();
-      }
-    }
-
-    function deleteLogo() {
-      const name = document.getElementById("deleteLogoName").value.trim().toLowerCase();
-      logos = logos.filter(l => l.name.toLowerCase() !== name);
-      document.getElementById("deleteLogoName").value = "";
-      renderLogos();
-    }
-
-    function deleteAll() {
-      if (confirm("Tüm logolar silinsin mi?")) {
-        logos = [];
-        renderLogos();
-      }
+    function deleteAll(){
+      if(confirm("Tüm logolar silinsin mi?")) { logos=[]; renderLogos(); }
     }
 
     renderLogos();
